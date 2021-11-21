@@ -1,0 +1,51 @@
+databaseChangeLog:
+- changeSet:
+    id: transaction_table
+    author: douglas
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              primaryKey: true
+              primaryKeyName: transaction_pkey
+              nullable: false
+            name: transaction_id
+            type: bigint
+        - column:
+            name: account_id
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: operation_type_id
+            type: bigint
+            constraints:
+              nullable: false
+        - column:
+            name: amount
+            type: numeric(15,2)
+            constraints:
+              nullable: false
+        - column:
+            name: event_date
+            type: datetime
+            constraints:
+              nullable: false
+        tableName: transaction
+        
+    -  addForeignKeyConstraint:  
+        baseColumnNames:  account_id  
+        baseTableName:  transaction  
+        constraintName:  fk_transaction_acc  
+        referencedColumnNames:  account_id  
+        referencedTableName:  account
+
+    -  addForeignKeyConstraint:  
+        baseColumnNames:  operation_type_id  
+        baseTableName:  transaction  
+        constraintName:  fk_transaction_op
+        referencedColumnNames:  operation_type_id  
+        referencedTableName:  operation_type
+        

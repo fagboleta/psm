@@ -1,0 +1,50 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:7.1.0'
+    }
+}
+
+apply plugin: com.bmuschko.gradle.docker.DockerRemoteApiPlugin
+
+
+import com.bmuschko.gradle.docker.tasks.container.*
+import com.bmuschko.gradle.docker.tasks.image.*
+
+
+final dbPidfileName = 'dbcontainer.pid';
+
+task pullDBImage(type: DockerPullImage) {
+   image = 'postgres:latest'
+}
+
+task createDBContainer(type: DockerCreateContainer) {
+    dependsOn pullDBImage
+    targetImageId 'postgres:latest'
+    containerName = 'postgres_db'
+    hostConfig.autoRemove = true
+    hostConfig.portBindings = ['54329:5432']
+    hostConfig.binds = ['/var/tmp':'/var/lib/postgresql/data'] 
+    envVars = ['POSTGRES_USER':'pismo','POSTGRES_PASSWORD':'pismo','POSTGRES_DB':'pismo','POSTGRES_HOST_AUTH_METHOD':'trust','PGDATA':'/var/lib/postgresql/data/pgdata']
+}    
+
+task startDBContainer(type: DockerStartContainer) {
+    dependsOn createDBContainer
+    targetContainerId createDBContainer.getContainerId()
+    doLast {
+   
+        new File(dbPidfileName).text = createDBContainer.getContainerId().get()
+       
+    }
+}
+
+
+task stopDBContainer(type: DockerStopContainer) {
+
+    def file = new File(dbPidfileName)
+    
+    targetContainerId  file.exists() ?  file.text : ''
+}
+

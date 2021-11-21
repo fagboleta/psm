@@ -1,0 +1,26 @@
+databaseChangeLog:
+- changeSet:
+    id: account_table
+    author: douglas
+    changes:
+    - createTable:
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              primaryKey: true
+              primaryKeyName: account_pkey
+              nullable: false
+            name: account_id
+            type: bigint
+        - column:
+            name: document_number
+            type: bigint
+            constraints:
+              nullable: false
+        tableName: account
+        
+    -  addUniqueConstraint:  
+        columnNames:  document_number 
+        constraintName:  udx_document_number  
+        tableName:  account  
