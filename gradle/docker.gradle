@@ -102,6 +102,13 @@ task stopDBContainer(type: DockerStopContainer) {
     def file = new File(dbPidfileName)
     
     targetContainerId  file.exists() ?  file.text : ''
+   
+    onError { exception ->
+       
+        println 'Warning unable to stop db'
+  
+    }
+    
 }
 
 
@@ -110,6 +117,13 @@ task stopAppContainer(type: DockerStopContainer) {
     def file = new File(appPidfileName)
     
     targetContainerId  file.exists() ?  file.text : ''
+    
+    onError { exception ->
+       
+        println 'Warning unable to stop app'
+  
+    }
+    
 }
 
 
