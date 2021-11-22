@@ -28,7 +28,7 @@ transações de ​ pagamento​ são registradas com ​ valor positivo​ .
 
 ## Iniciar app:
 
-* ./gradlew startApp
+* ./gradlew startApp (porta 8080)
 
 ## Rodar testes:
 
@@ -38,6 +38,7 @@ transações de ​ pagamento​ são registradas com ​ valor positivo​ .
 
 ## Executar app via docker:
 
-# TODO
+* ./gradlew startAppDocker (porta 9090)
+
 
 # Endpoints  [swagger](http://localhost:8080/swagger-ui/)

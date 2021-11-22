@@ -15,6 +15,40 @@ import com.bmuschko.gradle.docker.tasks.image.*
 
 
 final dbPidfileName = 'dbcontainer.pid';
+final appPidfileName = 'appcontainer.pid';
+
+
+task createDockerClear(type: Delete) {
+    delete "$projectDir/docker"
+}
+
+task createDockerCopyJar(type: Copy) {
+    dependsOn createDockerClear, bootJar
+    from("${project.buildDir}/libs") {
+        include "*${project.version}.jar"
+    }
+    into("$projectDir/docker")
+    fileMode = 0664
+    dirMode = 0775
+    rename(/.*/, 'app.jar')
+    
+}
+
+task createDockerFile(type: Dockerfile) {
+    dependsOn createDockerCopyJar
+    destFile = project.file('docker/Dockerfile')
+    from 'fabric8/java-alpine-openjdk11-jre'
+    copyFile('app.jar', 'app.jar')
+    defaultCommand('sh', '-c', 'java $JAVA_OPTS -jar /app.jar', '$RUN_ARGS')
+    exposePort 8080
+}
+
+task buildAppImage(type: DockerBuildImage) {
+    dependsOn createDockerFile
+    inputDir = file('docker')
+    images.add('pismo')
+}
+
 
 task pullDBImage(type: DockerPullImage) {
    image = 'postgres:latest'
@@ -23,7 +57,7 @@ task pullDBImage(type: DockerPullImage) {
 task createDBContainer(type: DockerCreateContainer) {
     dependsOn pullDBImage
     targetImageId 'postgres:latest'
-    containerName = 'postgres_db'
+    containerName = 'docker_auto'
     hostConfig.autoRemove = true
     hostConfig.portBindings = ['54329:5432']
     hostConfig.binds = ['/var/tmp':'/var/lib/postgresql/data'] 
@@ -41,10 +75,69 @@ task startDBContainer(type: DockerStartContainer) {
 }
 
 
+task createAppContainer(type: DockerCreateContainer) {
+    dependsOn buildAppImage, startDBContainer
+    targetImageId buildAppImage.getImageId()
+    hostConfig.portBindings = ['9090:8080']
+    hostConfig.autoRemove = true
+    hostConfig.links = ["docker_auto:database"]
+    envVars = ['SPRING_DATASOURCE_URL':'jdbc:postgresql://docker_auto:5432/pismo']
+    tty = true
+}
+
+task startAppContainer(type: DockerStartContainer) {
+    dependsOn createAppContainer
+    targetContainerId createAppContainer.getContainerId()
+     doLast {
+   
+        new File(appPidfileName).text = createAppContainer.getContainerId().get()
+       
+    }
+}
+
+
+
 task stopDBContainer(type: DockerStopContainer) {
 
     def file = new File(dbPidfileName)
     
     targetContainerId  file.exists() ?  file.text : ''
+}
+
+
+task stopAppContainer(type: DockerStopContainer) {
+
+    def file = new File(appPidfileName)
+    
+    targetContainerId  file.exists() ?  file.text : ''
+}
+
+
+task startAppDocker(type: GradleBuild) {
+ 
+   tasks = ['startAppContainer']
+   
+   doFirst {
+       
+       def fileDBPid = new File(dbPidfileName)
+       
+       if ( fileDBPid.exists()) {
+      
+            startAppDocker.tasks =  startAppDocker.tasks.plus(0, 'stopDBContainer')
+ 
+       }
+       
+       def fileAPPid = new File(appPidfileName)
+       
+       if ( fileAPPid.exists()) {
+      
+            startAppDocker.tasks =  startAppDocker.tasks.plus(0, 'stopAppContainer')
+ 
+        }
+ 
+  
+   }  
+   
+ 
 }
 
