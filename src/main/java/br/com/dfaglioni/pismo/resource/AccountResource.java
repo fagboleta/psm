@@ -53,7 +53,10 @@ public class AccountResource {
 		
 		
 		return ResponseEntity.ok(accountRepository
-				.save(Account.builder().documentNumber(accountDTO.getDocumentNumber()).build()).toDTO());
+				.save(Account.builder()
+						.documentNumber(accountDTO.getDocumentNumber())
+						.availableCreditLimit(accountDTO.getAvailableCreditLimit())
+						.build()).toDTO());
 	}
 
 }

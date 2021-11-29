@@ -1,5 +1,7 @@
 package br.com.dfaglioni.pismo.domain;
 
+import java.math.BigDecimal;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -38,9 +40,25 @@ public class Account {
 	@NotNull
 	private Long documentNumber;
 
+	@Column(name = "available_credit_limit")
+	@NotNull
+	private BigDecimal availableCreditLimit;
+
+	
 	public AccountDTO toDTO() {
 
-		return AccountDTO.builder().id(id).documentNumber(documentNumber).build();
+		return AccountDTO.builder().id(id).documentNumber(documentNumber)
+				.availableCreditLimit(availableCreditLimit)
+				.build();
 
+	}
+
+
+	public boolean applyAmount(BigDecimal amount) {
+		
+		availableCreditLimit  = availableCreditLimit.add(amount);
+		
+		return  availableCreditLimit.compareTo(BigDecimal.ZERO) >= 0; 
+		
 	}
 }

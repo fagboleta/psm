@@ -24,3 +24,17 @@ databaseChangeLog:
         columnNames:  document_number 
         constraintName:  udx_document_number  
         tableName:  account  
+
+- changeSet:
+    id: account_table_limit_column
+    author: douglas
+    changes:
+    - addColumn:
+        tableName: account
+        columns:
+          - column:
+              name: available_credit_limit
+              type: numeric(15,2)
+              constraints:
+                 nullable: false
+ 

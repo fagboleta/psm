@@ -1,5 +1,6 @@
 package br.com.dfaglioni.pismo.resource;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -37,13 +38,22 @@ public class TransactionResource {
 			return ResponseEntity.notFound().build();
 		}
 
-		return ResponseEntity
-				.ok(transactionRepository
-						.save(Transaction.builder().account(accountOptional.get())
-								.operationType(transactionDTO.getOperationType()).amount(transactionDTO
-										.getOperationType().adjustValueByOperation(transactionDTO.getAmount()))
-								.build())
-						.toDTO());
+		Account accountFound = accountOptional.get();
+
+		BigDecimal adjustAmound = transactionDTO.getOperationType().adjustValueByOperation(transactionDTO.getAmount());
+	
+		TransactionDTO transationDTOSaved = transactionRepository.save(Transaction.builder().account(accountFound)
+				.operationType(transactionDTO.getOperationType())
+				.amount(adjustAmound).build())
+				.toDTO();
+
+		if (!accountFound.applyAmount(adjustAmound)) {
+
+			return ResponseEntity.badRequest().build();
+					
+		}
+
+		return ResponseEntity.ok(transationDTOSaved);
 	}
 
 }

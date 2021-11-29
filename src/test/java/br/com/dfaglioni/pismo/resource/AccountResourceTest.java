@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +41,9 @@ public class AccountResourceTest {
 
 		mockMvc = MockMvcBuilders.standaloneSetup(resource).build();
 
-		Account account = Account.builder().id(1L).documentNumber(12345678900L).build();
+		Account account = Account.builder().id(1L).documentNumber(12345678900L)
+				.availableCreditLimit(BigDecimal.valueOf(11))
+				.build();
 	
 		when(accountRepository.findById(Mockito.eq(1L))).thenReturn(Optional.of(account));
 
@@ -72,10 +75,17 @@ public class AccountResourceTest {
 	public void postAccount() throws Exception {
 
 		mockMvc.perform(post("/accounts").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(AccountDTO.builder().documentNumber(12345678900L).build())))
+				.content(objectMapper.writeValueAsString(
+						AccountDTO.builder()
+						.documentNumber(12345678900L)
+						.availableCreditLimit(BigDecimal.valueOf(11))
+						.build())))
 				.andDo(MockMvcResultHandlers.print()).andExpect(status().isOk())
 				.andExpect(jsonPath("$.account_id").value(1))
-				.andExpect(jsonPath("$.document_number").value(12345678900L));
+				.andExpect(jsonPath("$.document_number").value(12345678900L))
+		        .andExpect(jsonPath("$.available_credit_Limit").value(11));
+		
+		
 
 	}
 
@@ -92,7 +102,10 @@ public class AccountResourceTest {
 	public void postAccountConflict() throws Exception {
 
 		mockMvc.perform(post("/accounts").accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(AccountDTO.builder().documentNumber(123L).build())))
+				.content(objectMapper.writeValueAsString(AccountDTO.builder()
+						.documentNumber(123L)
+						.availableCreditLimit(BigDecimal.ONE)
+						.build())))
 				.andDo(MockMvcResultHandlers.print()).andExpect(status().isConflict());
 	}
 }

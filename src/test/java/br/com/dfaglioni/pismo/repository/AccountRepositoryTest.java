@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -18,7 +19,7 @@ import br.com.dfaglioni.pismo.domain.Account;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Sql(statements = "insert into account values (1,123456)")
+@Sql(statements = "insert into account values (1,123456,0)")
 public class AccountRepositoryTest {
 
 	@Autowired
@@ -44,7 +45,11 @@ public class AccountRepositoryTest {
 	@Test
 	public void save() {
 
-		Account accountSaved = accountRepository.save(Account.builder().documentNumber(12345678900L).build());
+		Account accountSaved = accountRepository.save(
+				Account.builder()
+				.documentNumber(12345678900L)
+				.availableCreditLimit(BigDecimal.ONE).
+				build());
 
 		assertNotNull(accountSaved, "account");
 
@@ -57,7 +62,10 @@ public class AccountRepositoryTest {
 
 		Assertions.assertThrows(DataIntegrityViolationException.class, () -> {
 
-			accountRepository.save(Account.builder().documentNumber(123456L).build());
+			accountRepository.save(Account.builder()
+					.documentNumber(123456L)
+					.availableCreditLimit(BigDecimal.ONE)
+					.build());
 
 		});
 

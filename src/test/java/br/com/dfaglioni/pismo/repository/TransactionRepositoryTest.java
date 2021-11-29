@@ -20,7 +20,7 @@ import br.com.dfaglioni.pismo.domain.Transaction;
 
 @DataJpaTest
 @ActiveProfiles("test")
-@Sql(statements = { "insert into account values (1,123456)",
+@Sql(statements = { "insert into account values (1,123456,0)",
 		"insert into transaction values(10,1, 4, 50.44, {ts '2021-09-17 18:47:52.69'})" })
 public class TransactionRepositoryTest {
 
