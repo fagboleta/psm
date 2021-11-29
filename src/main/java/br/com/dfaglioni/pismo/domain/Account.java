@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.DynamicInsert;
@@ -42,6 +43,7 @@ public class Account {
 
 	@Column(name = "available_credit_limit")
 	@NotNull
+	@DecimalMin(value = "0.0", inclusive = false)
 	private BigDecimal availableCreditLimit;
 
 	
@@ -57,7 +59,7 @@ public class Account {
 	public boolean applyAmount(BigDecimal amount) {
 		
 		availableCreditLimit  = availableCreditLimit.add(amount);
-		
+		//TODO CONSIDERAR ERRO DE ARRENDONDAMENTO
 		return  availableCreditLimit.compareTo(BigDecimal.ZERO) >= 0; 
 		
 	}

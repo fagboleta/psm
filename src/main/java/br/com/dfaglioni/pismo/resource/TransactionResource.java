@@ -40,14 +40,16 @@ public class TransactionResource {
 
 		Account accountFound = accountOptional.get();
 
-		BigDecimal adjustAmound = transactionDTO.getOperationType().adjustValueByOperation(transactionDTO.getAmount());
+		BigDecimal adjustAmount = transactionDTO.getOperationType().adjustValueByOperation(transactionDTO.getAmount());
 	
 		TransactionDTO transationDTOSaved = transactionRepository.save(Transaction.builder().account(accountFound)
 				.operationType(transactionDTO.getOperationType())
-				.amount(adjustAmound).build())
+				.amount(adjustAmount).build())
 				.toDTO();
 
-		if (!accountFound.applyAmount(adjustAmound)) {
+		
+		//TODO CONSIDERAR A CONCORRENCIA NA ATUALIZAÇÃO DA MESMA CONTA NO MESMO MOMENTO
+		if (!accountFound.applyAmount(adjustAmount)) {
 
 			return ResponseEntity.badRequest().build();
 					
